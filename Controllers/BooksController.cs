@@ -18,9 +18,63 @@ namespace BooksAPI.Controllers
         };
 
         [HttpGet]
-        public ActionResult<List<Book>> GetBooks()  // return type ActionResult<List<Book>> allows returning HTTP status codes along with data
+        public ActionResult<List<Book>> GetAllBooks()  // return type ActionResult<List<Book>> allows returning HTTP status codes along with data
         {
-                return Ok(books); // wrapping in OK() object creates the status code of 200 OK with response body
+            return Ok(books); // wrapping in OK() object creates the status code of 200 OK with response body
         }
+
+        [HttpGet("{id}")]
+        public ActionResult<Book> GetBookById(int id)
+        {
+            var book = books.FirstOrDefault(b => b.Id == id);
+            if (book == null)
+            {
+                return NotFound(); // returns 404 Not Found if book not found
+            }
+            return Ok(book);
+
+        }
+
+        [HttpPost]
+        public ActionResult<Book> CreateBook(Book book)
+        {
+            if (book == null)
+            {
+                return BadRequest(); // returns 400 Bad Request if input is null
+            }
+
+            book.Id = books.Max(b => b.Id) + 1; // Assign new ID
+            books.Add(book);
+            return CreatedAtAction(nameof(GetBookById), new { id = book.Id }, book);
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult UpdateBook(int id, Book updatedBook)
+        {
+            var book = books.FirstOrDefault(b => b.Id == id);
+            if (book == null)
+            {
+                return NotFound(); // returns 404 Not Found if book not found
+            }
+            // Update book details
+            book.Title = updatedBook.Title;
+            book.Author = updatedBook.Author;
+            book.YearPublished = updatedBook.YearPublished;
+
+            return NoContent(); // returns 204 No Content to indicate successful update
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteBook(int id)
+        {
+            var book = books.FirstOrDefault(b => b.Id == id);
+            if (book == null)
+            {
+                return NotFound(); // returns 404 Not Found if book not found
+            }
+            books.Remove(book);
+            return NoContent(); // returns 204 No Content to indicate successful deletion
+        }
+
     }
 }
